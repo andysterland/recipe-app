@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Hosting;
+﻿using Microsoft.ApplicationInsights;
+using Microsoft.AspNetCore.Hosting;
 using RestSharp;
 using System;
 using System.Collections.Generic;
@@ -16,10 +17,33 @@ namespace PublicWebMVC
             get;
             private set;
         }
-        public RestClient ApiClient;
+        public RestClient ApiClient
+        {
+            get;
+            private set;
+        }
+        public bool IsDevelopment
+        {
+            get;
+            private set;
+        }
+        private TelemetryClient _AI;
+        public TelemetryClient AI
+        {
+            get
+            {
+                if (_AI == null)
+                {
+                    _AI = new TelemetryClient();
+                }
+                return _AI;
+            }
+        }
 
         public Global(IHostingEnvironment env)
         {
+            IsDevelopment = env.IsDevelopment();
+
             if (env.IsDevelopment())
             {
                 RestApiUri = new Uri("http://localhost:64407");
@@ -30,6 +54,7 @@ namespace PublicWebMVC
             }
 
             ApiClient = new RestClient(RestApiUri);
+
         }
     }
 }

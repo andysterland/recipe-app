@@ -42,6 +42,8 @@ namespace PublicWebMVC.Models
                 // Todo: Log errors...
                 return null;
             }
+            // DEMO: Snapshots on exceptions
+            // response = null;
 
             return response.Data;
         }

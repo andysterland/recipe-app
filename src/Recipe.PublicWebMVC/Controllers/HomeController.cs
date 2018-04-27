@@ -30,9 +30,9 @@ namespace PublicWebMVC.Controllers
             {
                 return RedirectToAction("Index");
             }
-
+            
             recipeViewModel = await RecipesViewModel.GetRecipeViewModelByName(searchString);
-
+            
             return View("Index", recipeViewModel);
         }
 
