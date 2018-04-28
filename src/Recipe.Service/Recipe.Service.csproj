@@ -26,7 +26,7 @@
     <UseGlobalApplicationHostFile />
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
-    <ApplicationInsightsResourceId>/subscriptions/4201ff44-23e7-4bde-a58b-be0154bfe304/resourcegroups/Default-ApplicationInsights-EastUS/providers/microsoft.insights/components/Recipe.Service</ApplicationInsightsResourceId>
+    <ApplicationInsightsResourceId>/subscriptions/4201ff44-23e7-4bde-a58b-be0154bfe304/resourcegroups/andster-build2018-recipe/providers/microsoft.insights/components/andster-build2018-recipe-ai</ApplicationInsightsResourceId>
     <ApplicationInsightsAnnotationResourceId>/subscriptions/4201ff44-23e7-4bde-a58b-be0154bfe304/resourcegroups/Default-ApplicationInsights-EastUS/providers/microsoft.insights/components/Recipe.Service</ApplicationInsightsAnnotationResourceId>
     <EnableDiagnosticsHubInstrumentation>true</EnableDiagnosticsHubInstrumentation>
   </PropertyGroup>
@@ -281,7 +281,7 @@
     <VisualStudio>
       <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
         <WebProjectProperties>
-          <UseIIS>True</UseIIS>
+          <UseIIS>False</UseIIS>
           <AutoAssignPort>True</AutoAssignPort>
           <DevelopmentServerPort>64407</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>

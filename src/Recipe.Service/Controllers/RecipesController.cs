@@ -1,4 +1,5 @@
 ﻿using Recipe.Service.Models;
+using System;
 using System.Collections.Generic;
 using System.Web;
 using System.Web.Http;
@@ -19,9 +20,14 @@ namespace Recipe.Service.Controllers
         /// <response code="200">Array of recipes</response>
         [Route("api/recipes/")]
         [HttpGet]
+        [Instrument.API.Instrument]
         public List<Models.Recipe> GetAll(int start = 0, int limit = 10, string sortBy = "lastUpdateDate", string orderBy = "desc")
         {
-            return RecipeManager.Singleton.GetRecipes(start, limit, sortBy, orderBy);
+            DateTime startTime = new DateTime();
+            var a = RecipeManager.Singleton.GetRecipes(start, limit, sortBy, orderBy);
+            TimeSpan duration = DateTime.Now - startTime;
+            Global.AI.TrackMetric("Recipe-LoadFromJsonTime", duration.TotalMilliseconds);
+            return a;
         }
 
         [Route("api/recipes/{id}")]
