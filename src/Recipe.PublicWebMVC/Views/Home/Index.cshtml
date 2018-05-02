@@ -8,8 +8,11 @@
 <main role="main">
     <div class="inline" style="padding: 5%;">
         <form asp-controller="Home" asp-action="Search" class="form-inline">
-            <input class="form-control mr-sm-2" type="search" name="searchString" placeholder="Search Recipes" aria-label="Search" style="width: 90%" value="@Model.SearchTerm"/>
+            <input class="form-control mr-sm-2" type="search" name="searchString" placeholder="Search Recipes" aria-label="Search" style="width: 90%" value="@Model.SearchTerm" />
             <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+        </form>
+        <form asp-controller="Home" asp-action="Top" class="form-inline">
+            <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Top Recipes</button>
         </form>
     </div>
     <div class="album py-5 bg-light">

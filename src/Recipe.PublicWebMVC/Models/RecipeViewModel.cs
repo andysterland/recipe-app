@@ -39,11 +39,11 @@ namespace PublicWebMVC.Models
             }
             catch (Exception ex)
             {
-                // Todo: Log errors...
+                // DEMO: Snapshots on exceptions
+                Global.Singleton.AI.TrackException(ex);
+
                 return null;
             }
-            // DEMO: Snapshots on exceptions
-            // response = null;
 
             return response.Data;
         }

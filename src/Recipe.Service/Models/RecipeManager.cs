@@ -56,6 +56,15 @@ namespace Recipe.Service.Models
             return _recipes[id];
         }
 
+        public List<Recipe> GetRecipes(int start, int limit, string sortBy, string orderBy)
+        {
+            IEnumerable<Recipe> recipes = (from recipe in _recipes.Values
+                                           orderby recipe.SpoonacularScore descending
+                                           select recipe).Skip(start).Take(limit);
+
+            return recipes.ToList();
+        }
+
         public List<Recipe> GetRecipesByName(string name) {
             Recipe[] recipesArray = _recipes.Values.ToArray();
             List<Recipe> recipes = null; //new List<Recipe>();
@@ -70,13 +79,29 @@ namespace Recipe.Service.Models
             return recipes;
         }
 
-        public List<Recipe> GetRecipes(int start, int limit, string sortBy, string orderBy)
+        public List<Recipe> GetRecipesByHighestRated()
         {
-            IEnumerable<Recipe> recipes = (from recipe in _recipes.Values
-                                           orderby recipe.SpoonacularScore descending
-                                           select recipe).Skip(start).Take(limit);
+            List<Recipe> recipes = _recipes.Values.ToList();
 
-            return recipes.ToList();
+            foreach (Recipe recipe in _recipes.Values)
+            {
+                for (int i = 0; i < recipes.Count; i++)
+                {
+                    for (int j = recipes.Count - 1; j > i; j--)
+                    {
+                        uint scoreA = Convert.ToUInt32(recipes[j].SpoonacularScore);
+                        uint scoreB = Convert.ToUInt32(recipes[j - 1].SpoonacularScore);
+                        if (scoreA > scoreB)
+                        {
+                            var temp = recipes[j];
+                            recipes[j] = recipes[j - 1];
+                            recipes[j - 1] = temp;
+                        }
+                    }
+                }
+            }
+
+            return recipes;
         }
 
         public bool SpeedTest()
@@ -93,7 +118,7 @@ namespace Recipe.Service.Models
 
         public Recipe GetRandom()
         {
-            int index = _random.Next(0, _recipes.Count);
+            int index = _random.Next(0, _recipes.Count - 1);
 
             return _recipes[index];
         }

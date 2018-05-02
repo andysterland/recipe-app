@@ -24,6 +24,8 @@ namespace PublicWebMVC.Controllers
 
         public async Task<IActionResult> Search(string searchString)
         {
+            // DEMO_AI: TrackEvent
+            Global.Singleton.AI.TrackEvent("Recipe/Search", new Dictionary<string, string> { { "SearchTerm", searchString } } );
             RecipesViewModel recipeViewModel = null;
 
             if (String.IsNullOrEmpty(searchString))
@@ -35,13 +37,19 @@ namespace PublicWebMVC.Controllers
             
             return View("Index", recipeViewModel);
         }
+        public async Task<IActionResult> Top()
+        {
+            RecipesViewModel recipeViewModel = await RecipesViewModel.GetRecipeViewModelByHighestRated();
+
+            return View("Index", recipeViewModel);
+        }
 
         public async Task<IActionResult> Recipe(string id)
         {
             long idAsLong = 0;
             if (!long.TryParse(id, out idAsLong))
             {
-                throw new Exception("Invalid id");
+                throw new ArgumentException("Invalid id");
             }
 
             RecipeViewModel recipe = await RecipeViewModel.GetRecipeViewModelById(idAsLong);
@@ -54,9 +62,21 @@ namespace PublicWebMVC.Controllers
             return View(recipe);
         }
 
-        public IActionResult Error()
+        public IActionResult Error(HttpStatusCode statusCode)
         {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            ErrorViewModel errorViewModel;
+            switch (statusCode)
+            {
+                case HttpStatusCode.NotFound:
+                    errorViewModel = new ErrorViewModel(Activity.Current?.Id ?? HttpContext.TraceIdentifier, "Page Not Found", "Sorry, but we couldn't find the page you were looking for.", statusCode);
+                    break;
+
+                default:
+                    errorViewModel = new ErrorViewModel(Activity.Current?.Id ?? HttpContext.TraceIdentifier, "Error", "Whoops, an unknown error occured.", HttpStatusCode.InternalServerError);
+                    break;
+            }
+
+            return View(errorViewModel); 
         }
     }
 }

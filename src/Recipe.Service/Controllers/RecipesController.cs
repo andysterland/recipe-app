@@ -1,6 +1,7 @@
 ﻿using Recipe.Service.Models;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Web;
 using System.Web.Http;
 using System.Web.Http.Cors;
@@ -23,10 +24,17 @@ namespace Recipe.Service.Controllers
         [Instrument.API.Instrument]
         public List<Models.Recipe> GetAll(int start = 0, int limit = 10, string sortBy = "lastUpdateDate", string orderBy = "desc")
         {
-            DateTime startTime = new DateTime();
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+            
+            // DEMO_AI: TrackMetric
+            Global.AI.TrackMetric("Recipe/GetAll/ItemCount", limit);
+
             var a = RecipeManager.Singleton.GetRecipes(start, limit, sortBy, orderBy);
-            TimeSpan duration = DateTime.Now - startTime;
-            Global.AI.TrackMetric("Recipe-LoadFromJsonTime", duration.TotalMilliseconds);
+
+            stopwatch.Stop();
+            Global.AI.TrackMetric("Recipe/GetAll/Duration", stopwatch.ElapsedMilliseconds);
+
             return a;
         }
 
@@ -60,6 +68,29 @@ namespace Recipe.Service.Controllers
             {
                 throw new HttpException(404, $"Recipes not found for name {name}");
             }
+            return recipes;
+        }
+
+        [Route("api/recipes/top/")]
+        [HttpGet]
+        public List<Models.Recipe> GetByHighestRated()
+        {
+            List<Models.Recipe> recipes = null;
+
+            try
+            {
+                RecipeManager.Singleton.GetRecipesByHighestRated();
+            }
+            catch (Exception ex)
+            {
+                Global.AI.TrackException(ex);
+            }
+
+            if (recipes == null)
+            {
+                throw new HttpException(404, $"No highest recipes found");
+            }
+
             return recipes;
         }
 

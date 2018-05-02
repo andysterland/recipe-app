@@ -24,6 +24,15 @@ namespace PublicWebMVC.Models
 
             return search;
         }
+        public static async Task<RecipesViewModel> GetRecipeViewModelByHighestRated()
+        {
+            RecipesViewModel search = null;
+
+            List<Recipe> recipes = await GetAllRecipesByRating();
+            search = new RecipesViewModel("", recipes);
+
+            return search;
+        }
 
         public static async Task<RecipesViewModel> GetRecipeViewModel()
         {
@@ -38,6 +47,35 @@ namespace PublicWebMVC.Models
             return search;
         }
 
+        private static async Task<List<Models.Recipe>> GetAllRecipes()
+        {
+            // DEMO: Run To           
+            RestRequest request = new RestRequest();
+            request.Resource = "api/recipes/";
+
+            IRestResponse<List<Models.Recipe>> response = null;
+
+            try
+            {
+                var cancellationTokenSource = new CancellationTokenSource();
+                response = await Global.Singleton.ApiClient.ExecuteTaskAsync<List<Models.Recipe>>(request, cancellationTokenSource.Token);
+
+                if (response.ErrorException != null)
+                {
+                    throw response.ErrorException;
+                }
+            }
+            catch (Exception ex)
+            {
+                Global.Singleton.AI.TrackException(ex);
+                return null;
+            }
+            // DEMO: Step Into Specific
+            string title = GetFancyName(GetRandom(response.Data).Title.ToUpper());
+
+            return response.Data;
+        }
+
         private static async Task<List<Models.Recipe>> GetRecipeByName(string name)
         {
             // Note: This is all crazytown code to demonstrate snapshots on exceptions
@@ -45,7 +83,7 @@ namespace PublicWebMVC.Models
 
             if(Global.Singleton.IsDevelopment)
             {
-                restApiUri = new Uri("http://localhost:64407");
+                restApiUri = new Uri("http://badhost:64407");
             }
             else
             {
@@ -72,19 +110,18 @@ namespace PublicWebMVC.Models
             }
             catch (Exception ex)
             {
-                // Todo: Log errors...
+                Global.Singleton.AI.TrackException(ex);
                 return null;
             }
             
             return response.Data;
         }
         
-        private static async Task<List<Models.Recipe>> GetAllRecipes()
+        private static async Task<List<Models.Recipe>> GetAllRecipesByRating()
         {
-            DateTime startTime = new DateTime();
             // DEMO: Run To           
             RestRequest request = new RestRequest();
-            request.Resource = "api/recipes/";
+            request.Resource = "api/recipes/top/";
 
             IRestResponse<List<Models.Recipe>> response = null;
 
@@ -100,26 +137,13 @@ namespace PublicWebMVC.Models
             }
             catch (Exception ex)
             {
-                // Todo: Log errors...
+                // DEMO_AI: TrackException
+                Global.Singleton.AI.TrackException(ex);
                 return null;
             }
-            // DEMO: Step Into Specific
-            string title = GetFancyName(GetRandom(response.Data).Title.ToUpper());
-
-
-            TimeSpan duration = DateTime.Now - startTime;
-            Global.Singleton.AI.TrackMetric("RecipeWWW-GetAllRecipes-Duration", duration.TotalMilliseconds);
 
             return response.Data;
         }
-
-
-
-
-
-
-
-
 
         private static Recipe GetRandom(List<Recipe> Recipes)
         {
