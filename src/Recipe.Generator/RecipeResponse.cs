@@ -1,12 +1,24 @@
-﻿using System;
+﻿// To parse this JSON data, add NuGet 'Newtonsoft.Json' then do:
+//
+//    using Recipe.Generator;
+//
+//    var recipeResponse = RecipeResponse.FromJson(jsonString);
+
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-
-namespace PublicWebMVC.Models
+namespace Recipe.Generator
 {
+
+    public partial class RecipeResponse
+    {
+        [JsonProperty("recipes", NullValueHandling = NullValueHandling.Ignore)]
+        public List<Recipe> Recipes { get; set; }
+    }
+
     public partial class Recipe
     {
         [JsonProperty("vegetarian", NullValueHandling = NullValueHandling.Ignore)]
@@ -97,7 +109,7 @@ namespace PublicWebMVC.Models
         public string ImageType { get; set; }
 
         [JsonProperty("cuisines", NullValueHandling = NullValueHandling.Ignore)]
-        public List<object> Cuisines { get; set; }
+        public List<string> Cuisines { get; set; }
 
         [JsonProperty("dishTypes", NullValueHandling = NullValueHandling.Ignore)]
         public List<string> DishTypes { get; set; }
@@ -143,6 +155,9 @@ namespace PublicWebMVC.Models
 
         [JsonProperty("equipment", NullValueHandling = NullValueHandling.Ignore)]
         public List<Ent> Equipment { get; set; }
+
+        [JsonProperty("length", NullValueHandling = NullValueHandling.Ignore)]
+        public Temperature Length { get; set; }
     }
 
     public partial class Ent
@@ -155,6 +170,18 @@ namespace PublicWebMVC.Models
 
         [JsonProperty("image", NullValueHandling = NullValueHandling.Ignore)]
         public string Image { get; set; }
+
+        [JsonProperty("temperature", NullValueHandling = NullValueHandling.Ignore)]
+        public Temperature Temperature { get; set; }
+    }
+
+    public partial class Temperature
+    {
+        [JsonProperty("number", NullValueHandling = NullValueHandling.Ignore)]
+        public long? Number { get; set; }
+
+        [JsonProperty("unit", NullValueHandling = NullValueHandling.Ignore)]
+        public string Unit { get; set; }
     }
 
     public partial class ExtendedIngredient
@@ -169,7 +196,7 @@ namespace PublicWebMVC.Models
         public string Image { get; set; }
 
         [JsonProperty("consistency", NullValueHandling = NullValueHandling.Ignore)]
-        public string Consistency { get; set; }
+        public Consistency? Consistency { get; set; }
 
         [JsonProperty("name", NullValueHandling = NullValueHandling.Ignore)]
         public string Name { get; set; }
@@ -190,32 +217,120 @@ namespace PublicWebMVC.Models
     public partial class WinePairing
     {
         [JsonProperty("pairedWines", NullValueHandling = NullValueHandling.Ignore)]
-        public List<object> PairedWines { get; set; }
+        public List<string> PairedWines { get; set; }
 
         [JsonProperty("pairingText", NullValueHandling = NullValueHandling.Ignore)]
         public string PairingText { get; set; }
 
         [JsonProperty("productMatches", NullValueHandling = NullValueHandling.Ignore)]
-        public List<object> ProductMatches { get; set; }
+        public List<ProductMatch> ProductMatches { get; set; }
     }
 
-    public partial class Recipe
+    public partial class ProductMatch
     {
-        public static Recipe FromJson(string json) => JsonConvert.DeserializeObject<Recipe>(json, Converter.Settings);
+        [JsonProperty("id", NullValueHandling = NullValueHandling.Ignore)]
+        public long? Id { get; set; }
+
+        [JsonProperty("title", NullValueHandling = NullValueHandling.Ignore)]
+        public string Title { get; set; }
+
+        [JsonProperty("description", NullValueHandling = NullValueHandling.Ignore)]
+        public string Description { get; set; }
+
+        [JsonProperty("price", NullValueHandling = NullValueHandling.Ignore)]
+        public string Price { get; set; }
+
+        [JsonProperty("imageUrl", NullValueHandling = NullValueHandling.Ignore)]
+        public string ImageUrl { get; set; }
+
+        [JsonProperty("averageRating", NullValueHandling = NullValueHandling.Ignore)]
+        public double? AverageRating { get; set; }
+
+        [JsonProperty("ratingCount", NullValueHandling = NullValueHandling.Ignore)]
+        public long? RatingCount { get; set; }
+
+        [JsonProperty("score", NullValueHandling = NullValueHandling.Ignore)]
+        public double? Score { get; set; }
+
+        [JsonProperty("link", NullValueHandling = NullValueHandling.Ignore)]
+        public string Link { get; set; }
+    }
+
+    public enum Consistency { Liquid, Solid };
+
+    public partial class RecipeResponse
+    {
+        public static RecipeResponse FromJson(string json) => JsonConvert.DeserializeObject<RecipeResponse>(json, Converter.Settings);
+    }
+
+    static class ConsistencyExtensions
+    {
+        public static Consistency? ValueForString(string str)
+        {
+            switch (str)
+            {
+                case "liquid": return Consistency.Liquid;
+                case "solid": return Consistency.Solid;
+                default: return null;
+            }
+        }
+
+        public static Consistency ReadJson(JsonReader reader, JsonSerializer serializer)
+        {
+            var str = serializer.Deserialize<string>(reader);
+            var maybeValue = ValueForString(str);
+            if (maybeValue.HasValue) return maybeValue.Value;
+            throw new Exception("Unknown enum case " + str);
+        }
+
+        public static void WriteJson(this Consistency value, JsonWriter writer, JsonSerializer serializer)
+        {
+            switch (value)
+            {
+                case Consistency.Liquid: serializer.Serialize(writer, "liquid"); break;
+                case Consistency.Solid: serializer.Serialize(writer, "solid"); break;
+            }
+        }
     }
 
     public static class Serialize
     {
-        public static string ToJson(this Recipe self) => JsonConvert.SerializeObject(self, Converter.Settings);
+        public static string ToJson(this RecipeResponse self) => JsonConvert.SerializeObject(self, Converter.Settings);
     }
 
-    internal class Converter
+    internal class Converter : JsonConverter
     {
+        public override bool CanConvert(Type t) => t == typeof(Consistency) || t == typeof(Consistency?);
+
+        public override object ReadJson(JsonReader reader, Type t, object existingValue, JsonSerializer serializer)
+        {
+            if (t == typeof(Consistency))
+                return ConsistencyExtensions.ReadJson(reader, serializer);
+            if (t == typeof(Consistency?))
+            {
+                if (reader.TokenType == JsonToken.Null) return null;
+                return ConsistencyExtensions.ReadJson(reader, serializer);
+            }
+            throw new Exception("Unknown type");
+        }
+
+        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        {
+            var t = value.GetType();
+            if (t == typeof(Consistency))
+            {
+                ((Consistency)value).WriteJson(writer, serializer);
+                return;
+            }
+            throw new Exception("Unknown type");
+        }
+
         public static readonly JsonSerializerSettings Settings = new JsonSerializerSettings
         {
             MetadataPropertyHandling = MetadataPropertyHandling.Ignore,
             DateParseHandling = DateParseHandling.None,
             Converters = {
+                new Converter(),
                 new IsoDateTimeConverter { DateTimeStyles = DateTimeStyles.AssumeUniversal }
             },
         };

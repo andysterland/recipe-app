@@ -38,8 +38,7 @@ namespace PublicWebMVC.Models
                 }
             }
             catch (Exception ex)
-            {
-                // DEMO: Snapshots on exceptions
+            {                
                 Global.Singleton.AI.TrackException(ex);
 
                 return null;

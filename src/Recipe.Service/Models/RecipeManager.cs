@@ -20,109 +20,72 @@ namespace Recipe.Service.Models
             Singleton = new RecipeManager();
         }
 
-        private string _recipesPath = "~//App_Data/Recipes";
-        private Dictionary<long?, Recipe> _recipes = new Dictionary<long?, Recipe>();
-        private Random _random = new Random(new DateTime().Millisecond);
-        
-        public RecipeManager()
+        private string RecipesPath = "~/App_Data/Recipes";
+        private Dictionary<long?, Recipe> Recipes = new Dictionary<long?, Recipe>();
+        private Random rand = new Random();
+        private IEnumerator<long?> keysEnumerator;
+        public Recipe NextRecipe
         {
-            LoadRecipes();
+            get
+            {
+                if (!keysEnumerator.MoveNext())
+                {
+                    keysEnumerator.Reset();
+                }
+
+                return Recipes[keysEnumerator.Current];
+            }
+            set { }
         }
 
-        [Instrument.API.Instrument]
-        public void LoadRecipes()
+        public RecipeManager()
         {
-            DateTime startTime = new DateTime();
-            string resolvedPath = System.Web.HttpContext.Current.Server.MapPath(_recipesPath);
-            string[] files = Directory.GetFiles(resolvedPath);
+            string resolvedPath  = System.Web.HttpContext.Current.Server.MapPath(RecipesPath);
 
-            foreach (string fileName in files)
+            string[] filenames = Directory.GetFiles(resolvedPath);
+            foreach(string filename in filenames)
             {
-                string json = File.ReadAllText(fileName);
+                string json = File.ReadAllText(filename);
                 Recipe recipe = LoadRecipeFromJson(json);
-                //DEMO: Step back
-                _recipes.Add(recipe.Id, recipe);
+                Recipes.Add(recipe.Id, recipe);
             }
-            TimeSpan duration = DateTime.Now - startTime;
-            Global.AI.TrackMetric("Recipe-LoadFromJsonTime", duration.TotalMilliseconds);
+
+            keysEnumerator = Recipes.Keys.GetEnumerator();
         }
 
         public Recipe GetRecipeById(long id)
         {
-            if (!_recipes.ContainsKey(id))
+            if(!Recipes.ContainsKey(id))
             {
                 return null;
             }
-            return _recipes[id];
+            return Recipes[id];
         }
 
-        public List<Recipe> GetRecipes(int start, int limit, string sortBy, string orderBy)
+        public List<Recipe> Search(int start, int limit, string sortBy, string orderBy)
         {
-            IEnumerable<Recipe> recipes = (from recipe in _recipes.Values
-                                           orderby recipe.SpoonacularScore descending
-                                           select recipe).Skip(start).Take(limit);
+            // Note: This is obvioussly insane and done for the sake of a demo
+            Recipe[] recipesArray = Recipes.Values.ToArray();
 
-            return recipes.ToList();
-        }
-
-        public List<Recipe> GetRecipesByName(string name) {
-            Recipe[] recipesArray = _recipes.Values.ToArray();
-            List<Recipe> recipes = null; //new List<Recipe>();
-
-            for (int i = 0; i < recipesArray.Length; i++) {
-
-                // Perform case insensitive search
-                if (recipesArray[i].Title.IndexOf(name, StringComparison.OrdinalIgnoreCase) >= 0) {
-                    recipes.Add(recipesArray[i]);
-                }
-            }
-            return recipes;
-        }
-
-        public List<Recipe> GetRecipesByHighestRated()
-        {
-            List<Recipe> recipes = _recipes.Values.ToList();
-
-            foreach (Recipe recipe in _recipes.Values)
+            for (int i = 0; i < recipesArray.Length; i++)
             {
-                for (int i = 0; i < recipes.Count; i++)
+                for (int j = 0; j < recipesArray.Length - i - 1; j++)
                 {
-                    for (int j = recipes.Count - 1; j > i; j--)
+                    if (recipesArray[j].SpoonacularScore > recipesArray[j + 1].SpoonacularScore)
                     {
-                        uint scoreA = Convert.ToUInt32(recipes[j].SpoonacularScore);
-                        uint scoreB = Convert.ToUInt32(recipes[j - 1].SpoonacularScore);
-                        if (scoreA > scoreB)
-                        {
-                            var temp = recipes[j];
-                            recipes[j] = recipes[j - 1];
-                            recipes[j - 1] = temp;
-                        }
+                        Recipe tempRecipe = recipesArray[j];
+                        recipesArray[j] = recipesArray[j + 1];
+                        recipesArray[j + 1] = tempRecipe;
                     }
                 }
             }
+            
+            IEnumerable<Recipe> returnRecipe = recipesArray.ToList();
+            returnRecipe = returnRecipe.Skip(start).Take(limit);
 
-            return recipes;
+            return (List<Recipe>)returnRecipe.ToList();
         }
-
-        public bool SpeedTest()
-        {
-            List<Recipe> linqRecipes = GetRecipesLinqSpeedTest();
-
-            List<Recipe> bubbleSortRecipes = GetRecipesBubbleSortSpeedTest();
-
-            // Pointless comparison.
-            bool hasSameTopResult = linqRecipes[0].Id == bubbleSortRecipes[0].Id;
-
-            return hasSameTopResult;
-        }
-
-        public Recipe GetRandom()
-        {
-            int index = _random.Next(0, _recipes.Count - 1);
-
-            return _recipes[index];
-        }
-
+        
         private Recipe LoadRecipeFromJson(string json)
         {
             return JsonConvert.DeserializeObject<Recipe>(json, Converter.Settings);
@@ -140,54 +103,5 @@ namespace Recipe.Service.Models
             };
         }
 
-        private List<Recipe> GetRecipesLinqSpeedTest()
-        {
-            List<Recipe> linqRecipes = null;
-            for (int i = 0; i < 100; i++)
-            {
-                List<Recipe> lingqLocalCopy = new List<Recipe>(_recipes.Values);
-                linqRecipes = GetRecipesLinqSpeedTestInner(lingqLocalCopy);
-            }
-
-            return linqRecipes;
-        }
-
-        private List<Recipe> GetRecipesLinqSpeedTestInner(List<Recipe> recipes)
-        {
-            recipes = ( from recipe in recipes
-                        orderby recipe.SpoonacularScore descending
-                        select recipe).Take(10).ToList();
-
-            return recipes;
-        }
-        private List<Recipe> GetRecipesBubbleSortSpeedTest()
-        {
-            List<Recipe> bubbleSortRecipes=null;
-            for (int i = 0; i < 100; i++)
-            {
-                List<Recipe> bubbleSortLocalCopy = new List<Recipe>(_recipes.Values);
-                bubbleSortRecipes = GetRecipesBubbleSortSpeedTestInner(bubbleSortLocalCopy);
-            }
-
-            return bubbleSortRecipes;
-        }
-
-        private List<Recipe> GetRecipesBubbleSortSpeedTestInner(List<Recipe> recipes)
-        {
-            for (int i = 0; i < recipes.Count; i++)
-            {
-                for (int j = recipes.Count - 1; j > i; j--)
-                {
-                    if (recipes[j].SpoonacularScore < recipes[j - 1].SpoonacularScore)
-                    {
-                        var temp = recipes[j];
-                        recipes[j] = recipes[j - 1];
-                        recipes[j - 1] = temp;
-                    }
-                }
-            }
-
-            return recipes;
-        }
     }
 }

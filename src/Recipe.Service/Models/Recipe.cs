@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
@@ -8,7 +7,6 @@ using Newtonsoft.Json.Converters;
 
 namespace Recipe.Service.Models
 {
-    [DebuggerDisplay("{Title,nq}, id: {Id}")]
     public partial class Recipe
     {
         [JsonProperty("vegetarian", NullValueHandling = NullValueHandling.Ignore)]
@@ -129,16 +127,16 @@ namespace Recipe.Service.Models
         public string Name { get; set; }
 
         [JsonProperty("steps", NullValueHandling = NullValueHandling.Ignore)]
-        public List<StepInfo> Steps { get; set; }
+        public List<Step> Steps { get; set; }
     }
 
-    public partial class StepInfo
+    public partial class Step
     {
         [JsonProperty("number", NullValueHandling = NullValueHandling.Ignore)]
         public long? Number { get; set; }
 
         [JsonProperty("step", NullValueHandling = NullValueHandling.Ignore)]
-        public string Step { get; set; }
+        public string StepStep { get; set; }
 
         [JsonProperty("ingredients", NullValueHandling = NullValueHandling.Ignore)]
         public List<Ent> Ingredients { get; set; }

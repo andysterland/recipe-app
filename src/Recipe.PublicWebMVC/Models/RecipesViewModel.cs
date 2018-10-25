@@ -39,9 +39,9 @@ namespace PublicWebMVC.Models
             RecipesViewModel search = null;
 
             List<Recipe> recipes = await GetAllRecipes();
-            //DEMO: DebuggerDisplay
+            //DEMO: 06 - DebuggerDisplay View
             search = new RecipesViewModel("", recipes);
-            //DEMO: $ReturnValue, $ReturnValue1 etc...
+            //DEMO: 05 - $ReturnValue, $ReturnValue1 etc...
             var temp = "   Hello world!   ".ToLower().ToUpper().Trim();
 
             return search;
@@ -49,7 +49,7 @@ namespace PublicWebMVC.Models
 
         private static async Task<List<Models.Recipe>> GetAllRecipes()
         {
-            // DEMO: Run To           
+            // DEMO: 01 - Run To  
             RestRequest request = new RestRequest();
             request.Resource = "api/recipes/";
 
@@ -70,7 +70,7 @@ namespace PublicWebMVC.Models
                 Global.Singleton.AI.TrackException(ex);
                 return null;
             }
-            // DEMO: Step Into Specific
+            // DEMO: 02 - Step Into Specific
             string title = GetFancyName(GetRandom(response.Data).Title.ToUpper());
 
             return response.Data;
@@ -83,7 +83,7 @@ namespace PublicWebMVC.Models
 
             if(Global.Singleton.IsDevelopment)
             {
-                restApiUri = new Uri("http://badhost:64407");
+                restApiUri = new Uri("http://localhost:64407");
             }
             else
             {
@@ -113,33 +113,23 @@ namespace PublicWebMVC.Models
                 Global.Singleton.AI.TrackException(ex);
                 return null;
             }
-            
+            // DEMO: 03 - Tracepoints ($FUNCTION {response.Data.Count} matches), show parameter values in the Call Stack 
             return response.Data;
         }
         
         private static async Task<List<Models.Recipe>> GetAllRecipesByRating()
-        {
-            // DEMO: Run To           
+        {         
             RestRequest request = new RestRequest();
             request.Resource = "api/recipes/top/";
 
             IRestResponse<List<Models.Recipe>> response = null;
+            
+            var cancellationTokenSource = new CancellationTokenSource();
+            response = await Global.Singleton.ApiClient.ExecuteTaskAsync<List<Models.Recipe>>(request, cancellationTokenSource.Token);
 
-            try
+            if (response.ErrorException != null)
             {
-                var cancellationTokenSource = new CancellationTokenSource();
-                response = await Global.Singleton.ApiClient.ExecuteTaskAsync<List<Models.Recipe>>(request, cancellationTokenSource.Token);
-
-                if (response.ErrorException != null)
-                {
-                    throw response.ErrorException;
-                }
-            }
-            catch (Exception ex)
-            {
-                // DEMO_AI: TrackException
-                Global.Singleton.AI.TrackException(ex);
-                return null;
+                throw response.ErrorException;
             }
 
             return response.Data;
@@ -147,6 +137,7 @@ namespace PublicWebMVC.Models
 
         private static Recipe GetRandom(List<Recipe> Recipes)
         {
+            // DEMO: 04 - NSE
             Random random = new Random(new DateTime().Millisecond);
             int index = random.Next(0, Recipes.Count - 1);
 
@@ -176,3 +167,5 @@ namespace PublicWebMVC.Models
         }
     }
 }
+// DEMO: 03 - Hack for break on change
+// Need to open the other app!
