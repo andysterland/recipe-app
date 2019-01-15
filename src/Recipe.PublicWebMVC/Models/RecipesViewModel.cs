@@ -1,6 +1,4 @@
-﻿using Monolith;
-using RestSharp;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -50,64 +48,29 @@ namespace Recipe.Monolith.Models
 
         private static async Task<List<Models.Recipe>> GetAllRecipes()
         {
-            // DEMO: 01 - Run To  
-            RestRequest request = new RestRequest();
-            request.Resource = "api/recipes/";
-
-            IRestResponse<List<Models.Recipe>> response = null;
-
+            // DEMO: 01 - Run To 
+            List<Models.Recipe> recipes = new List<Recipe>();
             try
             {
-                var cancellationTokenSource = new CancellationTokenSource();
-                response = await Global.Singleton.ApiClient.ExecuteTaskAsync<List<Models.Recipe>>(request, cancellationTokenSource.Token);
-
-                if (response.ErrorException != null)
-                {
-                    throw response.ErrorException;
-                }
+                recipes = RecipeManager.GetAll();
             }
             catch (Exception ex)
             {
                 Global.Singleton.AI.TrackException(ex);
                 return null;
             }
-            // DEMO: 02 - Step Into Specific
-            string title = GetFancyName(GetRandom(response.Data).Title.ToUpper());
+            // TODO: DEMO: 02 - Step Into Specific
 
-            return response.Data;
+            return recipes;
         }
 
         private static async Task<List<Models.Recipe>> GetRecipeByName(string name)
         {
-            // Note: This is all crazytown code to demonstrate snapshots on exceptions
-            Uri restApiUri; 
-
-            if(Global.Singleton.IsDevelopment)
-            {
-                restApiUri = new Uri("http://localhost:64407");
-            }
-            else
-            {
-                restApiUri = Global.Singleton.RestApiUri;
-            }
-
-            RestClient apiClient = new RestClient(restApiUri);
-
-            RestRequest request = new RestRequest();
-            request.Resource = "api/recipes/search/{name}";
-            request.AddUrlSegment("name", name);
-
-            IRestResponse<List<Models.Recipe>> response = null;
+            List<Models.Recipe> recipes = new List<Recipe>();
 
             try
             {
-                var cancellationTokenSource = new CancellationTokenSource();
-                response = await apiClient.ExecuteTaskAsync<List<Models.Recipe>>(request, cancellationTokenSource.Token);
-
-                if (response.ErrorException != null)
-                {
-                    throw response.ErrorException;
-                }
+                recipes = RecipeManager.GetAllByName(name);
             }
             catch (Exception ex)
             {
@@ -115,25 +78,12 @@ namespace Recipe.Monolith.Models
                 return null;
             }
             // DEMO: 03 - Tracepoints ($FUNCTION {response.Data.Count} matches), show parameter values in the Call Stack 
-            return response.Data;
+            return recipes;
         }
         
         private static async Task<List<Models.Recipe>> GetAllRecipesByRating()
-        {         
-            RestRequest request = new RestRequest();
-            request.Resource = "api/recipes/top/";
-
-            IRestResponse<List<Models.Recipe>> response = null;
-            
-            var cancellationTokenSource = new CancellationTokenSource();
-            response = await Global.Singleton.ApiClient.ExecuteTaskAsync<List<Models.Recipe>>(request, cancellationTokenSource.Token);
-
-            if (response.ErrorException != null)
-            {
-                throw response.ErrorException;
-            }
-
-            return response.Data;
+        {
+            return RecipeManager.GetAll();
         }
 
         private static Recipe GetRandom(List<Recipe> Recipes)

@@ -12,9 +12,10 @@ namespace Recipe.Monolith.Controllers
     {
         public IActionResult Index()
         {
-            List<Recipe.Monolith.Models.Recipe> recipes = null;
+            List<Recipe.Monolith.Models.Recipe> recipes = RecipeManager.GetAll();
 
             ViewData["Recipes"] = recipes;
+            ViewData["Title"] = "Fabrikam Recipes";
 
             return View();
         }

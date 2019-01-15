@@ -1,8 +1,8 @@
-﻿using Monolith;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -14,16 +14,9 @@ namespace Recipe.Monolith.Models
 {
     public class RecipeManager
     {
-        public static RecipeManager Singleton;
 
-        static RecipeManager()
-        {
-            Singleton = new RecipeManager();
-        }
-        
-        private Dictionary<long?, Recipe> Recipes = new Dictionary<long?, Recipe>();
-        private Random rand = new Random();
-        private IEnumerator<long?> keysEnumerator;
+        private static Dictionary<long?, Recipe> recipes = null;
+        private static IEnumerator<long?> keysEnumerator;
         public Recipe NextRecipe
         {
             get
@@ -33,43 +26,71 @@ namespace Recipe.Monolith.Models
                     keysEnumerator.Reset();
                 }
 
-                return Recipes[keysEnumerator.Current];
+                return recipes[keysEnumerator.Current];
             }
             set { }
         }
 
-        public RecipeManager()
+        static RecipeManager()
         {
-            string resolvedPath = Global.Singleton.DataPath;
+            recipes = new Dictionary<long?, Recipe>();
+
+            string resolvedPath = Path.Combine(Global.Singleton.DataPath, "Recipes");
 
             string[] filenames = Directory.GetFiles(resolvedPath);
             foreach(string filename in filenames)
             {
                 string json = File.ReadAllText(filename);
                 Recipe recipe = LoadRecipeFromJson(json);
-                Recipes.Add(recipe.Id, recipe);
+                recipes.Add(recipe.Id, recipe);
             }
 
-            keysEnumerator = Recipes.Keys.GetEnumerator();
+            keysEnumerator = recipes.Keys.GetEnumerator();
         }
 
-        public Recipe GetRecipeById(long id)
+        public static List<Recipe> GetAll()
         {
-            if(!Recipes.ContainsKey(id))
+            return recipes.Values.ToList();
+        }
+
+        public static Recipe GetRecipeById(long id)
+        {
+            if(!recipes.ContainsKey(id))
             {
                 return null;
             }
-            return Recipes[id];
+            return recipes[id];
         }
 
-        public List<Recipe> Search(int start, int limit, string sortBy, string orderBy)
+        // GetAllByName
+        public static List<Recipe> GetAllByName(string Name)
+        {
+            return Search(Name, 0, 100);
+        }
+
+        public static List<Recipe> Search(string term, int start, int limit)
         {
             // Note: This is obvioussly insane and done for the sake of a demo
-            Recipe[] recipesArray = Recipes.Values.ToArray();
+            List<Recipe> recipesArray = new List<Recipe>();
 
-            for (int i = 0; i < recipesArray.Length; i++)
+            foreach(Recipe r in recipes.Values.ToList())
             {
-                for (int j = 0; j < recipesArray.Length - i - 1; j++)
+                if(!string.IsNullOrWhiteSpace(term))
+                {
+                    if(r.Title.Contains(term))
+                    {
+                        recipesArray.Add(r);
+                    }
+                }
+                else
+                {
+                    recipesArray.Add(r);
+                }
+            }
+
+            for (int i = 0; i < recipesArray.Count; i++)
+            {
+                for (int j = 0; j < recipesArray.Count - i - 1; j++)
                 {
                     if (recipesArray[j].SpoonacularScore > recipesArray[j + 1].SpoonacularScore)
                     {
@@ -86,7 +107,7 @@ namespace Recipe.Monolith.Models
             return (List<Recipe>)returnRecipe.ToList();
         }
         
-        private Recipe LoadRecipeFromJson(string json)
+        private static Recipe LoadRecipeFromJson(string json)
         {
             return JsonConvert.DeserializeObject<Recipe>(json, Converter.Settings);
         }

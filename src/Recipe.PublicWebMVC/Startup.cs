@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Monolith
+namespace Recipe.Monolith
 {
     public class Startup
     {
@@ -27,6 +27,8 @@ namespace Monolith
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
+            Global.Singleton = new Global(env);
+
             if (env.IsDevelopment())
             {
                 app.UseBrowserLink();

@@ -3,12 +3,12 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <ApplicationInsightsResourceId>/subscriptions/4201ff44-23e7-4bde-a58b-be0154bfe304/resourcegroups/andster-build2018-recipe/providers/microsoft.insights/components/andster-build2018-recipe-ai</ApplicationInsightsResourceId>
-    <ApplicationInsightsAnnotationResourceId>/subscriptions/4201ff44-23e7-4bde-a58b-be0154bfe304/resourcegroups/andster-build2018-recipe/providers/microsoft.insights/components/andster-build2018-recipe-ai</ApplicationInsightsAnnotationResourceId>
+    <ApplicationInsightsAnnotationResourceId>/subscriptions/4201ff44-23e7-4bde-a58b-be0154bfe304/resourcegroups/andster-recipe-monolith/providers/microsoft.insights/components/%28Project Name%29</ApplicationInsightsAnnotationResourceId>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="BuildBundlerMinifier" Version="2.6.375" />
-    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.1.1" />
+    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.5.1" />
     <PackageReference Include="Microsoft.ApplicationInsights.SnapshotCollector" Version="1.2.1" />
     <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.4" />
     <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.6" />
