@@ -4,15 +4,15 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using PublicWebMVC.Models;
+using Recipe.Monolith.Models;
 
-namespace PublicWebMVC.Controllers
+namespace Recipe.Monolith.Controllers
 {
     public class HomeController : Controller
     {
         public IActionResult Index()
         {
-            List<Recipe> recipes = null;
+            List<Recipe.Monolith.Models.Recipe> recipes = null;
 
             ViewData["Recipes"] = recipes;
 

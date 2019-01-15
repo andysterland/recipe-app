@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
 
-namespace PublicWebMVC.Models
+namespace Recipe.Monolith.Models
 {
     public partial class Recipe
     {

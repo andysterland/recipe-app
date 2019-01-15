@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace PublicWebMVC
+namespace Monolith
 {
     public class Global
     {
@@ -37,6 +37,19 @@ namespace PublicWebMVC
                     _AI = new TelemetryClient();
                 }
                 return _AI;
+            }
+        }
+
+        private string _dataPath;
+        public string DataPath
+        {
+            get
+            {
+                if (_dataPath == null)
+                {
+                    _dataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+                }
+                return _dataPath;
             }
         }
 

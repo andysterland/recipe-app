@@ -1,6 +1,6 @@
 using System;
 
-namespace PublicWebMVC.Models
+namespace Recipe.Monolith.Models
 {
     public class ErrorViewModel
     {

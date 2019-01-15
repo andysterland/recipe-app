@@ -1,11 +1,12 @@
-﻿using RestSharp;
+﻿using Monolith;
+using RestSharp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace PublicWebMVC.Models
+namespace Recipe.Monolith.Models
 {
     public class RecipesViewModel
     {
