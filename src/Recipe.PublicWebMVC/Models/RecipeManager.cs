@@ -53,6 +53,11 @@ namespace Recipe.Monolith.Models
             return recipes.Values.ToList();
         }
 
+        public static List<Recipe> GetAll(int Count)
+        {
+            return recipes.Values.Take<Recipe>(Count).ToList();
+        }
+
         public static Recipe GetRecipeById(long id)
         {
             if(!recipes.ContainsKey(id))
