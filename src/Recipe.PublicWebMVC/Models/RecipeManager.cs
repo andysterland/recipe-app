@@ -17,6 +17,8 @@ namespace Recipe.Monolith.Models
 
         private static Dictionary<long?, Recipe> recipes = null;
         private static IEnumerator<long?> keysEnumerator;
+        private static string resolvedPath = Path.Combine(Global.Singleton.DataPath, "Recipes");
+
         public Recipe NextRecipe
         {
             get
@@ -35,13 +37,15 @@ namespace Recipe.Monolith.Models
         {
             recipes = new Dictionary<long?, Recipe>();
 
-            string resolvedPath = Path.Combine(Global.Singleton.DataPath, "Recipes");
-
             string[] filenames = Directory.GetFiles(resolvedPath);
             foreach(string filename in filenames)
             {
                 string json = File.ReadAllText(filename);
                 Recipe recipe = LoadRecipeFromJson(json);
+
+                if (recipe.Hits == null) {
+                    recipe.Hits = 0;
+                }
                 recipes.Add(recipe.Id, recipe);
             }
 
@@ -77,7 +81,7 @@ namespace Recipe.Monolith.Models
             {
                 if(!string.IsNullOrWhiteSpace(term))
                 {
-                    if(r.Title.Contains(term))
+                    if(r.Title.IndexOf(term, StringComparison.OrdinalIgnoreCase) >= 0)
                     {
                         recipesArray.Add(r);
                     }
@@ -105,6 +109,20 @@ namespace Recipe.Monolith.Models
             returnRecipe = returnRecipe.Skip(start).Take(limit);
 
             return (List<Recipe>)returnRecipe.ToList();
+        }
+
+        public static void UpdateRecipe(long id, Models.Recipe recipe)
+        {
+            // TODO: when there's time, write the updated stuff to the actual file
+            //recipes[id] = recipe;
+
+            //Write recipe updates to original JSON file
+            string recipeFile = resolvedPath + "/" + recipe.Id + ".json";
+            using (StreamWriter file = File.CreateText(recipeFile))
+            {
+                JsonSerializer serializer = new JsonSerializer();
+                serializer.Serialize(file, recipe);
+            }
         }
         
         private static Recipe LoadRecipeFromJson(string json)

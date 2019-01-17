@@ -9,6 +9,9 @@ namespace Recipe.Monolith.Models
 {
     public partial class Recipe
     {
+        [JsonProperty("hits", NullValueHandling = NullValueHandling.Ignore)]
+        public int? Hits { get; set; }
+
         [JsonProperty("vegetarian", NullValueHandling = NullValueHandling.Ignore)]
         public bool? Vegetarian { get; set; }
 
