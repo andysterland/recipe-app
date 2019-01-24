@@ -1,16 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
 
 namespace Recipe.Monolith.Models
-{
+{   
+    [DebuggerDisplay("{Title}")]
     public partial class Recipe
     {
         [JsonProperty("hits", NullValueHandling = NullValueHandling.Ignore)]
-        public int? Hits { get; set; }
+        public int Hits { get; set; }
 
         [JsonProperty("vegetarian", NullValueHandling = NullValueHandling.Ignore)]
         public bool? Vegetarian { get; set; }

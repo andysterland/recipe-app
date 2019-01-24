@@ -63,6 +63,7 @@ namespace Recipe.Monolith.Models
             {
                 return null;
             }
+            //recipes[id].Hits++;
             return recipes[id];
         }
 
